@@ -8,7 +8,6 @@ on:
         description: 'Release tag to build'
         required: false
         type: string
-        default: '0.7.10'
       image_base_tag:
         description: 'Docker tag for Base image'
         required: false
