@@ -1471,7 +1471,7 @@ export class MerlinSearchRequest implements MerlinPrimitive{
         return {
           type: pObject.type,
           args:{
-            comparison: pObject.args['comparions'],
+            comparison: pObject.args['comparison'],
             field: pObject.args['field'],
             date: pObject.args['date'],
           }
