@@ -35,14 +35,17 @@ describe('Merlin tag conditions', () => {
 
 const restoreMethod = cls.members.find(x => ts.isMethodDeclaration(x) && x.name.getText(ast) === 'fromOperationJsonObj') as ts.MethodDeclaration;
 const restoreSource = ts.transpileModule('function restore(pObject:any)' + restoreMethod.body.getText(ast), {compilerOptions: {target: ts.ScriptTarget.ES2022}}).outputText;
+const operationEnum = ast.statements.find(x => ts.isEnumDeclaration(x) && x.name.text === 'OperationType') as ts.EnumDeclaration;
+const enumSource = ts.transpileModule(operationEnum.getText(ast).replace(/^export\s+/, ''), {compilerOptions: {target: ts.ScriptTarget.ES2022}}).outputText;
+const OperationType = new Function(enumSource + '\nreturn OperationType;')();
 const restore = new Function('OperationType', 'SearchRequestCondition', restoreSource + '\nreturn restore;')(
-    {FILTER: 1, SEARCH: 2, INNERJOIN: 3, VALIDATE: 4, INTERSECT: 5, SIZE: 6, TIME: 7}, SearchRequestCondition
+    OperationType, SearchRequestCondition
 );
 
 describe('Merlin time operation serialization', () => {
     it('preserves comparison direction, field and timestamp', () => {
         for (const comparison of [0, 1]) {
-            const operation = {type: 7, args: {comparison, field: 'createdAt', date: 1700000000000}};
+            const operation = {type: OperationType.TIME, args: {comparison, field: 'createdAt', date: 1700000000000}};
             expect(restore(JSON.parse(JSON.stringify(operation)))).to.deep.equal(operation);
         }
     });
