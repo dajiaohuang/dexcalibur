@@ -1,6 +1,8 @@
 import {expect} from 'chai';
 import {AndroidBinary} from '../src/parser/common/AndroidBinaryResourceUtils.js';
 import {AndroidBinary as DocumentAndroidBinary} from '../src/android/AndroidBinaryResourceUtils.js';
+import {Axml} from '../src/parser/AxmlDocumentParser.js';
+import {AxmlStructures} from '../src/android/AxmlStructures.js';
 
 for (const implementation of [AndroidBinary, DocumentAndroidBinary]) {
 describe('Android resource strings', function () {
@@ -25,3 +27,16 @@ describe('Android resource strings', function () {
     });
 });
 }
+
+describe('AXML character data', function () {
+    it('preserves empty character data in both structures', function () {
+        const pool = new AndroidBinary.ResStringPool(new AndroidBinary.ResChunkHeader());
+        pool.strings = [''];
+        const header = new AndroidBinary.ResChunkHeader();
+        for (const cdata of [new Axml.ResXMLCData(header), new AxmlStructures.AxmlCData(header)]) {
+            expect(cdata.getDataString(pool)).to.equal('');
+            cdata.data = 2;
+            expect(cdata.getDataString(pool)).to.equal('data_2');
+        }
+    });
+});
