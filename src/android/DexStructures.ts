@@ -1164,9 +1164,9 @@ export namespace DexStructures {
                 case '51l': // vAA, #+BBBBBBBBBBBBBBBB
                     insn.operands.push({ type: 'register', value: (codeUnit >> 8) & 0xFF });
                     if (offset + 4 < bytecode.length) {
-                        const low = bytecode[offset + 1] | (bytecode[offset + 2] << 16);
-                        const high = bytecode[offset + 3] | (bytecode[offset + 4] << 16);
-                        insn.operands.push((BigInt(high) << 32n) | BigInt(low));
+                        const low = BigInt(bytecode[offset + 1]) | (BigInt(bytecode[offset + 2]) << 16n);
+                        const high = BigInt(bytecode[offset + 3]) | (BigInt(bytecode[offset + 4]) << 16n);
+                        insn.operands.push(BigInt.asIntN(64, (high << 32n) | low));
                     }
                     break;
 
