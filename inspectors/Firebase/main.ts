@@ -80,7 +80,7 @@ var FirebaseInspector:InspectorFactory = new InspectorFactory({
             emitEvent: "hook.firebase.cloud_db.get",
             before: `
                 let o:any = {};
-                arguments.map((x:any,i:number) => {
+                Array.from(arguments).forEach((x:any,i:number) => {
                     o['arg'+i] = x; 
                 });
                 printTest();
@@ -99,7 +99,7 @@ var FirebaseInspector:InspectorFactory = new InspectorFactory({
             before: `
                    
                 let o:any = {};
-                arguments.map((x:any,i:number) => {
+                Array.from(arguments).forEach((x:any,i:number) => {
                     o['arg'+i] = x; 
                 });
                 
@@ -116,6 +116,7 @@ var FirebaseInspector:InspectorFactory = new InspectorFactory({
             autoEmit: true,
             emitEvent: "hook.firebase.db.insert",
             before: `
+                let msg = arguments[0];
                 DXC.send("@@__HOOK_ID__@@","@@__FRAG_ID__@@",
                     {
                         msg: msg
