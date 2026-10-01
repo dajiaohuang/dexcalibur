@@ -15,5 +15,13 @@ describe('Audit metadata dependencies', function () {
         collection.addEntry('value', 42);
         assert.equal(collection.getEntry('value'), 42);
         assert.equal(collection.size(), 1);
+        collection.removeEntry('value');
+        assert.equal(collection.size(), 0);
+        collection.removeEntry('value');
+        assert.equal(collection.size(), 0);
+        collection.addEntry('value', 7);
+        collection.setEntry('value', 9);
+        assert.equal(collection.size(), 1);
+        assert.equal(collection.getEntry('value'), 9);
     });
 });
