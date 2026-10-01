@@ -125,9 +125,7 @@ export class UrlParser {
             }
         }
 
-        var url = _url_.Url !== undefined
-            ? new _url_.Url()
-            : {}
+        var url = parse('')
 
         url.path = str
         url.href = str
