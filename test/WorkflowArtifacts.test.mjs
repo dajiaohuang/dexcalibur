@@ -2,6 +2,7 @@ import { strict as assert } from 'node:assert';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import yaml from 'js-yaml';
+import {spawnSync} from 'node:child_process';
 
 const workflow = yaml.load(readFileSync(new URL('../.github/workflows/CI.yml', import.meta.url), 'utf8'));
 
@@ -25,4 +26,19 @@ test('Docker context belongs to the checkout in the Docker job', () => {
     const build = steps.find(step => step.uses === 'docker/build-push-action@v6').with;
     assert.equal(build.context, `./${checkout.path}`);
     assert.ok(build.file.startsWith(`${build.context}/`));
+});
+
+test('extra Docker notification reflects the job result', () => {
+    const extra = yaml.load(readFileSync(new URL('../.github/workflows/DockerExtra.yml', import.meta.url), 'utf8'));
+    const script = extra.jobs['notify-discord'].steps.find(step => step.run).run;
+    const selection = script.slice(script.indexOf('if [['), script.indexOf('RUN_URL='));
+    const bash = process.platform === 'win32' ? 'C:/Program Files/Git/bin/bash.exe' : 'bash';
+    for (const [result, expected] of [['success', 'SUCCESS'], ['cancelled', 'CANCELLED'], ['failure', 'FAILED']]) {
+        const execution = spawnSync(bash, ['-c', selection + '\nprintf "%s" "$STATUS"'], {
+            env: {...process.env, PUBLISH: result}, encoding: 'utf8'
+        });
+        assert.ifError(execution.error);
+        assert.equal(execution.status, 0, execution.stderr);
+        assert.equal(execution.stdout, expected);
+    }
 });
