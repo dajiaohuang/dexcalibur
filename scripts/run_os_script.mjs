@@ -23,6 +23,7 @@ import * as _fs_ from 'fs';
 import * as _path_ from 'path';
 import * as _child_ from 'child_process';
 import * as _os_ from 'os';
+import { fileURLToPath } from 'url';
 
 
 const OS = _os_.platform();
@@ -45,12 +46,12 @@ var os_scripts = {
 }
 
 
-const path = new URL(import.meta.url).pathname;
+const path = fileURLToPath(import.meta.url);
 //const cheminDossier = path.substring(0, path.lastIndexOf('/'));
 
 
 // scan scripts directory
-const base = _path_.join(path.substring(0, path.lastIndexOf('/')), 'os_scripts');
+const base = _path_.join(_path_.dirname(path), 'os_scripts');
 _fs_.readdirSync(base, { encoding:'utf8'})
     .map( vFile => {
         const t = _path_.basename(vFile).split('.');
@@ -75,26 +76,27 @@ _fs_.readdirSync(base, { encoding:'utf8'})
 var script = os_scripts[OS];
 if(script==null || !script.hasOwnProperty(process.argv[2])){
     console.log("\x1b[31m[ERROR] Script not found for : "+OS+", "+process.argv[2]+"\x1b[0m");
-    process.exit(0);
+    process.exit(1);
 }
 
 script = script[process.argv[2]];
 console.log("\x1b[34m[STARTING] "+script.f+" [type="+script.t+"]  for "+OS+"\x1b[0m ");
 
+let result;
 switch(script.t){
     case "bat":
         console.log("\x1b[31m[ERROR] BAT command are not yet supported.\x1b[0m")
-        break;
+        process.exit(1);
     case "sh":
         _fs_.chmodSync(script.f, 0o777); // add +x
-        _child_.spawnSync(script.f,(process.argv.length>3 ? process.argv.slice(3) : []), {
+        result = _child_.spawnSync('sh',[script.f].concat(process.argv.slice(3)), {
             stdio: 'inherit',
-            shell: true,
+            shell: false,
             cwd: process.cwd()
         });
         break;
     case "js":
-        _child_.spawnSync('node',[script.f].concat(process.argv.slice(3)), {
+        result = _child_.spawnSync(process.execPath,[script.f].concat(process.argv.slice(3)), {
             stdio: 'inherit',
             shell: false,
             cwd: process.cwd()
@@ -102,9 +104,13 @@ switch(script.t){
         break;
     default:
         console.log("Nothing to execute");
-        break;
+        process.exit(1);
 }
 
+if(result.error){
+    console.error(result.error.message);
+}
+process.exitCode = result.status ?? 1;
 
 console.log("-- Bye. --");
 
