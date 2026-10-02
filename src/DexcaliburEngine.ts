@@ -59,7 +59,7 @@ import {UserAccount} from "./user/UserAccount.js";
 import {NodeSchema} from "./NodeSchema.js";
 import {DexcaliburUpdater} from "./DexcaliburUpdater.js";
 import {DXC_LIFECYCLE_EVENT} from "./CoreConst.js";
-import Util from "./Utils.js";
+import Util, {JsRunner} from "./Utils.js";
 import {LicenceManager} from "./credit/LicenceManager.js";
 import {AuditManager} from "./audit/AuditManager.js";
 import {WebGuiConfiguration} from "./webserver/WebGuiConfiguration.js";
@@ -129,6 +129,7 @@ export interface DexcaliburEngineOptions {
     master_pub_key?:Nullable<string>;
     master_opts?:MasterNodeOptions;
     signature_server?: SignatureServerOptions;
+    runner?:JsRunner;
     offline?:boolean;
 }
 
@@ -2099,6 +2100,10 @@ export default class DexcaliburEngine extends ValidationCapable implements IDexc
 
         Logger.success('DxEngine has been stopped successfully');
         process.exit(0);
+    }
+
+    getRunner():JsRunner {
+        return this._engOpts.runner;
     }
 }
 

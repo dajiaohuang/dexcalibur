@@ -1272,7 +1272,7 @@ export class EngineNode implements INode {
 
         Logger.info( `[ENGINE NODE] Start to spawn new node [node=${this.UUID}] because : ${pCause}`);
         try{
-            let args:string[] = pNodeOpts;
+            let args:string[] = [];
             const ws:DexcaliburWorkspace =  DexcaliburWorkspace.getInstance();
             const time = UT.time();
 
@@ -1308,8 +1308,6 @@ export class EngineNode implements INode {
                 args.push("--debug");
             }
 
-            Logger.info('[NODE] Spawn command : node '+args.join(' '));
-
             // TODO : remove ? secret leak ?
             this.spawnCmd = args.join(' ');
 
@@ -1317,9 +1315,27 @@ export class EngineNode implements INode {
                 this.setState(NodeState.STARTING);
             }
 
+            let nodeOpts = pNodeOpts;
+            const runner = (this._engine as DexcaliburEngine).getRunner();
+
+            if(["node","deno"].indexOf(runner)==-1){
+                throw new Error("[ENGINE NODE] Unsupported runner : "+runner);
+            }
+
+            if(runner=="deno"){
+                args = [ 'run', '-A', '--sloppy-imports', '--unsafe-proto', ... nodeOpts.map(x => {
+                    if(/^--max-old-space-size=\d+$/.test(x)){
+                        return `--v8-flags=${x}`
+                    }else return x;
+                }),  ...args ];
+            }else{
+                args = [ ...nodeOpts, ...args ];
+            }
+
+            Logger.info(`[ENGINE NODE] Spawn command : ${runner} `+args.join(' '));
 
             //child = _child_process_.spawn('node', args, { detached: true, stdio: [ 'ignore', out, err ] });
-            child = _child_process_.spawn('node', args, {
+            child = _child_process_.spawn(runner, args, {
                 detached: true,
                 env: {
                     ... process.env,

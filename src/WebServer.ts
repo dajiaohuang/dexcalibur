@@ -77,7 +77,6 @@ import {NODE_MGR_WEB_API} from "./webapi/node.web.api.js";
 import {ORG_WEB_API} from "./webapi/organization.web.api.js";
 import {HEALTH_WEB_API} from "./webapi/health.web.api.js";
 import {WEBHOOK_WEB_API} from "./webapi/webhook.web.api.js";
-import {DexcaliburEngineMode} from "./DexcaliburEngineMode.js";
 import {SecurityZone} from "./security/SecurityZone.js";
 import {MARKETPLACE_WEB_API} from "./webapi/mkplace.web.api.js";
 import {ValidationCapable} from "@reversense/dexcalibur-orm";
@@ -593,6 +592,7 @@ export default class WebServer
                 res.set('Access-Control-Allow-Origin', '*');
                 if (err != null) {
                     $.logs.access.push("[404]:" + mime + " " + req.path + " => " + localPath+" " +err.message);
+                    Logger.error("[INFO][WEBSERVER][404] File not found: "+localPath);
                     res.status(404).send("An error occured, file not found.");
                     return;
                 }
@@ -704,6 +704,7 @@ export default class WebServer
                 res.set('Access-Control-Allow-Origin', '*');
                 if (err != null) {
                     $.logs.access.push("[404]:" + mime + " " + vUnsafeReq.path + " => " + localPath+" " +err.message);
+                    Logger.error("[INFO][WEBSERVER][404] Dispatcher: File not found: "+localPath);
                     res.status(404).send("An error occured, file not found.");
                     return;
                 }

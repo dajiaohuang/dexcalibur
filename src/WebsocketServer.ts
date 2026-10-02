@@ -83,7 +83,7 @@ export class WebsocketServer
      * @field
      * @since 1.0.0
      */
-    port:number = null;
+    port:number = -1;
 
     /**
      * Websocket server instance
@@ -437,9 +437,14 @@ export class WebsocketServer
      */
     start() :number {
 
-        if(this.port==null){
+        if(Number.isNaN(this.port) || this.port<=0){
             this.port = this.engine.getSettings().getWebserverSettings().getWsPort();
         }
+
+        if(Number.isNaN(this.port) || this.port<=0){
+            throw new Error("Expected HTTP port to be greater than 0");
+        }
+
 
         const wwwPort = this.port;
 

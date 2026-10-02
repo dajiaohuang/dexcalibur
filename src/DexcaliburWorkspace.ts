@@ -205,7 +205,7 @@ export default class DexcaliburWorkspace
         }
 
         // export new to current
-        if(process.env.DEXCALIBUR_TEST)
+        if(process.env.DXC_TEST)
             this.settings.exportTo( _path_.join( this.cfgFolder, FILENAME_TESTCONFIG) );
         else
             this.settings.exportTo( this.configPath );

@@ -242,6 +242,7 @@ if(projectArgs.slaveMode){
     console.log("------- MODE : STANDALONE --------");
 }
 
+engineOpts.runner = Util.detectRuntime();
 
 
 // create an empty single (not yet initialiazed) instance of engine

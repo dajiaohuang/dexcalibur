@@ -36,6 +36,8 @@ import * as Log from "./Logger.js";
 
 
 
+export type JsRunner = "deno" | "node" | "bun" | "browser" | "unknown";
+
 export interface SearchValueMatch {
     name: string;
     value: string;
@@ -883,7 +885,7 @@ export default class Util {
      */
     static psList(pOptions = { command:null }):{ command:string, pid: number }[] {
 
-        let proc:any = Util.execSync("ps -axo pid,args").split("\n"); //.filter(x=>x.indexOf("slave-node")>-1);
+        let proc:any = Util.execSync("ps -axo pid,args").toString().split("\n"); //.filter(x=>x.indexOf("slave-node")>-1);
         proc.shift();
         const cleaned:{ pid:number, command:string }[] = [];
 
@@ -905,6 +907,18 @@ export default class Util {
         });
 
         return cleaned;
+    }
+
+
+    static detectRuntime(): JsRunner {
+        // @ts-ignore - not declared in @types/node
+        if (typeof Deno !== "undefined" && Deno.version?.deno) return "deno";
+        // @ts-ignore
+        if (typeof Bun !== "undefined") return "bun";
+        if (typeof process !== "undefined" && process.versions?.node) return "node";
+        // @ts-ignore
+        if (typeof window !== "undefined" && typeof document !== "undefined") return "browser";
+        return "unknown";
     }
 }
 

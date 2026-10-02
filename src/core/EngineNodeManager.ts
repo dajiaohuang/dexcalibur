@@ -1539,11 +1539,19 @@ export class EngineNodeManager {
                 args.push("--debug");
             }
 
-            Logger.info('[NODE] Spawn command : node '+args.join(' '));
 
+            const runner = this.engine.getRunner();
+            if(["node","deno"].indexOf(runner)==-1){
+                throw new Error("[ENGINE NODE MANAGER] Unsupported runner : "+runner);
+            }
 
+            if(runner=="deno"){
+                args = [ 'run', '-A', '--sloppy-imports', '--unsafe-proto', ...args ];
+            }
+
+            Logger.info(`[ENGINE NODE MANAGER] Spawn command : ${runner} `+args.join(' '));
             //child = _child_process_.spawn('node', args, { detached: true, stdio: [ 'ignore', out, err ] });
-            child = _child_process_.spawn('node', args, {
+            child = _child_process_.spawn(runner, args, {
                 detached: true,
                 env: {
                     ... process.env,
@@ -1659,7 +1667,12 @@ export class EngineNodeManager {
     async nextGloballyWaitingOpe(pNode:EngineNodeUUID):Promise<Nullable<Order>> {
 
         // slave waiting queue is empty
+        console.log(this._self);
+        if(this._self==null){
+            this._self = await this.getEngineNodeByUUID(pNode); // new EngineNode({ parentUUID:null, UUID:DexcaliburEngine.DEFAULT_UID });
+        }
 
+        console.log(this._self);
         Logger.info(`[ENGINE NODE][${this._self.UUID}][nextGloballyWaitingOpe] Retrieve next operation from waiting queue of [slave=${pNode}]. State = ${this._self.isReady()}, Queue = ${this._self.waitingQueue.length}`)
 
         if(this.engine==null){
